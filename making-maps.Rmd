@@ -20,9 +20,11 @@ point.count <- read.csv("data/grassland-bird-point-count_18Sept25.csv")
 locations <- read.csv("data/site-locations.csv")
 ```
 
+For this exercise I am exploring how to make different types of maps in R. First, let's take a look at the locations of all the surveys completed. 
+
 ## Counties Surveyed 
 
-```{r filter county map}
+```{r filter county map, include=FALSE}
 # add basic map data
 state <- map_data("state")
 county <- map_data("county")
@@ -38,7 +40,7 @@ tn.counties <- county %>%
          == "hamilton" | subregion == "lake" | subregion == "hardin" | subregion == "fayette" | subregion == "monroe")
 ```
 
-```{r create county map}
+```{r create county map, fig.align='center'}
 ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
                         fill = "white", color="black") + 
            geom_polygon(data = tn, aes(x=long, y = lat, group = group),
@@ -47,10 +49,10 @@ ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
                         fill = "green4", color="black") +
            geom_point(data = locations, aes(x=long, y=lat), color = "black") + 
   coord_fixed(xlim = c(-91, -81),  ylim = c(34, 37), ratio = 1.2) + 
-  xlab("Longitude") + ylab("Latitude") + ggtitle("Survey Locations Across TN")
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Survey Locations Across TN") 
 ```
 
-```{r tn imagery}
+```{r tn imagery, eval=FALSE, include=FALSE}
 TNMap <- openmap(c(34.3104,-91.59783),
                      c(36.9414,-80.7439), 
                      "esri-imagery", zoom=7, # zoom 6ish good for states
@@ -59,18 +61,20 @@ TNMap <- openmap(c(34.3104,-91.59783),
 TN.satellite <- openproj(TNMap, projection = "+proj=longlat +ellps=WGS84 +units=m +no_defs")
 ```
 
-```{r stellite tn survey locations}
+```{r stellite tn survey locations, eval=FALSE, include=FALSE}
 autoplot.OpenStreetMap(TN.satellite) +
   borders("state", regions = "tennessee", colour = "white", fill = NA, size = 1) +
   geom_point(data=locations, aes(x = long, y = lat), size = 3) + 
   labs(x="Longtiude", y="Latitude") + theme(legend.position = "none") + ggtitle("Survey Locations Across TN")
 ```
 ## Interactive Map
+Survey locations were identified with the National Land Cover Dataset classifications of cultivated crop, herbaceous, and hay/pasture. Let's see where these are distributed. 
 
-```{r}
+```{r interactive map, fig.align='center'}
 colors <- leaflet::colorFactor(palette = c("blue", "orange", "yellow"), domain = c("Cultivated Crop", "Herbaceous", "Hay/Pasture"))
 
 tn_map <- map("state", "tennessee", fill = TRUE, plot = FALSE)
+tn_sf <- st_as_sf(tn_map)
 tn_sf <- st_transform(tn_sf, crs = 4326)
 
 leaflet(locations) %>% 
