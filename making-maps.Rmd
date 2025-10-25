@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-pacman::p_load("ggspatial","leaflet","OpenStreetMap","raster","sf","terra","terrainr","tidyterra","tidyverse")
+pacman::p_load("ggspatial","leaflet","OpenStreetMap","raster","sf","terra","terrainr","tidyterra","tidyverse", "maps")
 library(dplyr) # data manipulation
 library(ggplot2) # making graphs
 library(tidyverse)  # importing, tidying, plotting data
@@ -17,5 +17,36 @@ library(hexbin)
 obs <- read.csv("data/grassland-bird-species-obs_09July25.csv")
 veg <- read.csv("data/grassland-bird-veg_09July25.csv")
 point.count <- read.csv("data/grassland-bird-point-count_18Sept25.csv")
+locations <- read.csv("data/site-locations.csv")
+```
+
+## Counties Surveyed 
+
+```{r filter county map}
+# add basic map data
+state <- map_data("state")
+county <- map_data("county")
+# filter to tn
+tn <- county %>% 
+  filter(region=="tennessee")
+# select counties
+tn.counties <- county %>% 
+  filter(region == "tennessee") %>% 
+  filter(subregion == "montgomery" | subregion == "coffee" | subregion == "stewart" | subregion == "hickman" | subregion 
+         == "davidson" | subregion == "dyer" | subregion == "white" | subregion == "cumberland" | subregion == "rhea" | 
+           subregion == "meigs" | subregion == "lauderdale" | subregion == "knox" | subregion == "lawrence" | subregion 
+         == "hamilton" | subregion == "lake" | subregion == "hardin" | subregion == "fayette" | subregion == "monroe")
+```
+
+```{r create county map}
+ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
+                        fill = "white", color="black") + 
+           geom_polygon(data = tn, aes(x=long, y = lat, group = group),
+                        fill = "gray91", color="black") + 
+           geom_polygon(data = tn.counties, aes(x=long, y = lat, group = group),
+                        fill = "green4", color="black") +
+           geom_point(data = locations, aes(x=long, y=lat), color = "black") + 
+  coord_fixed(xlim = c(-91, -81),  ylim = c(34, 37), ratio = 1.2) + 
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Survey Locations Across TN")
 ```
 
