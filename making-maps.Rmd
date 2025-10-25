@@ -50,3 +50,27 @@ ggplot() + geom_polygon(data = state, aes(x=long, y = lat, group = group),
   xlab("Longitude") + ylab("Latitude") + ggtitle("Survey Locations Across TN")
 ```
 
+```{r tn imagery}
+TNMap <- openmap(c(34.3104,-91.59783),
+                     c(36.9414,-80.7439), 
+                     "esri-imagery", zoom=7, # zoom 6ish good for states
+                     mergeTiles = TRUE)
+
+TN.satellite <- openproj(TNMap, projection = "+proj=longlat +ellps=WGS84 +units=m +no_defs")
+```
+
+```{r stellite tn survey locations}
+autoplot.OpenStreetMap(TN.satellite) +
+  borders("state", regions = "tennessee", colour = "white", fill = NA, size = 1) +
+  geom_point(data=locations, aes(x = long, y = lat), size = 3) + 
+  labs(x="Longtiude", y="Latitude") + theme(legend.position = "none") + ggtitle("Survey Locations Across TN")
+```
+
+## Site Types
+
+```{r}
+leaflet(locations) %>% 
+  addTiles() %>% 
+  addMarkers(popup = locations$nlcd,
+             lng = locations$long, 
+             lat = locations$lat)
