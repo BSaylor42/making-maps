@@ -65,12 +65,24 @@ autoplot.OpenStreetMap(TN.satellite) +
   geom_point(data=locations, aes(x = long, y = lat), size = 3) + 
   labs(x="Longtiude", y="Latitude") + theme(legend.position = "none") + ggtitle("Survey Locations Across TN")
 ```
-
-## Site Types
+## Interactive Map
 
 ```{r}
+colors <- leaflet::colorFactor(palette = c("blue", "orange", "yellow"), domain = c("Cultivated Crop", "Herbaceous", "Hay/Pasture"))
+
 leaflet(locations) %>% 
   addTiles() %>% 
-  addMarkers(popup = locations$nlcd,
+  addCircleMarkers(popup = locations$nlcd,
              lng = locations$long, 
-             lat = locations$lat)
+             lat = locations$lat,
+             weight = 2, 
+             color = ~colors(nlcd), 
+             fillColor = ~colors(nlcd), 
+             fillOpacity = 0.8)  %>% 
+  addLegend(position = "bottomright", 
+            pal = colors, 
+            values = ~nlcd, 
+            title = "NLCD Land Classifications") %>% 
+  addScaleBar()
+```
+
