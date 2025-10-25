@@ -70,19 +70,33 @@ autoplot.OpenStreetMap(TN.satellite) +
 ```{r}
 colors <- leaflet::colorFactor(palette = c("blue", "orange", "yellow"), domain = c("Cultivated Crop", "Herbaceous", "Hay/Pasture"))
 
+tn_map <- map("state", "tennessee", fill = TRUE, plot = FALSE)
+tn_sf <- st_transform(tn_sf, crs = 4326)
+
 leaflet(locations) %>% 
   addTiles() %>% 
-  addCircleMarkers(popup = locations$nlcd,
+  addProviderTiles("OpenStreetMap", group = "Streets") %>%
+  addProviderTiles("CartoDB.Positron", group = "Simple") %>% 
+  addProviderTiles("Esri.WorldImagery", group = "Imagery") %>% 
+  addProviderTiles("Esri.WorldPhysical", group = "Topo") %>% 
+  addCircleMarkers(popup = locations$property,
              lng = locations$long, 
              lat = locations$lat,
              weight = 2, 
              color = ~colors(nlcd), 
              fillColor = ~colors(nlcd), 
              fillOpacity = 0.8)  %>% 
+  addPolygons(data = tn_sf,
+    color = "black",       # border color
+    weight = 2,            # border thickness
+    fill = FALSE           # outline only
+  ) %>%
   addLegend(position = "bottomright", 
             pal = colors, 
             values = ~nlcd, 
             title = "NLCD Land Classifications") %>% 
-  addScaleBar()
+  addScaleBar() %>% 
+  addLayersControl(baseGroups = c("Streets", "Simple", "Imagery", "Topo"), 
+                   options = layersControlOptions(collapsed = FALSE))
 ```
 
